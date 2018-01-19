@@ -14,12 +14,39 @@
             <dataSource type="POOLED">  
              <!--  -->    
                 <property name="driver" value="com.mysql.jdbc.Driver" />  
-                <property name="url" value="jdbc:mysql://localhost:3306/bjdxselenium?characterEncoding=UTF-8" />  
+                <property name="url" value="jdbc:mysql://123.57.94.233:3306/bjdxselenium?characterEncoding=UTF-8" />  
+                <property name="username" value="dxnews_test" />  
+                <property name="password" value="userzxy" /> 
+             
+             
+                <!--   
+                <property name="driver" value="com.mysql.jdbc.Driver" />  
+                <property name="url" value="jdbc:mysql://123.57.94.233:3306/bjdxselenium?characterEncoding=UTF-8" />  
                 <property name="username" value="root" />  
-                <property name="password" value="root" /> 
-             
-             
-      
+                <property name="password" value="aLxSqUbTwO" />   
+                -->
+                
+                <!--     
+                <property name="driver" value="com.mysql.jdbc.Driver" />  
+                <property name="url" value="jdbc:mysql://127.0.0.1:3306/bjdxselenium?characterEncoding=UTF-8" />  
+                <property name="username" value="root" />  
+                <property name="password" value="root" />   
+             -->
+                
+                <!--    
+ 				<property name="driver" value="com.mysql.jdbc.Driver" />  
+                <property name="url" value="jdbc:mysql://rm-2zepv24t1b4z50t59o.mysql.rds.aliyuncs.com:3306/bmw?characterEncoding=UTF-8" />  
+                <property name="username" value="maodajun" />  
+                <property name="password" value="ma0DaJun" />  
+                 -->
+                
+                 
+                <!--   
+                <property name="driver" value="com.mysql.jdbc.Driver" />  
+                <property name="url" value="jdbc:mysql://rm-2zepv24t1b4z50t59.mysql.rds.aliyuncs.com:3306/bmw?characterEncoding=UTF-8" />  
+                <property name="username" value="maodajun" />  
+                <property name="password" value="ma0DaJun" />  
+                  -->        
             </dataSource>  
         </environment>  
     </environments>  
