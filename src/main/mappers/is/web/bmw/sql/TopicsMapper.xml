@@ -1,0 +1,670 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+    <!DOCTYPE mapper 
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mappers.is.web.bmw.sql.TopicsMapper">
+	<insert id="addTopics" parameterType="com.is.web.bmw.entity.sql.entity.Topics" useGeneratedKeys="true" keyProperty="topics.id">
+		insert into <include refid="table" />(
+			id
+			<if test="topics.name!=null">,name</if>
+			<if test="topics.readed!=null">,readed</if>
+			<if test="topics.readedplan!=null">,readedplan</if>
+			<if test="topics.liked!=null">,liked</if>
+			<if test="topics.likedplan!=null">,likedplan</if>
+			<if test="topics.collected!=null">,collected</if>
+			<if test="topics.collectedplan!=null">,collectedplan</if>
+			<if test="topics.oldid!=null">,oldid</if>
+			<if test="topics.content!=null">,content</if>
+			
+		)values(
+			#{topics.id}
+			<if test="topics.name!=null">,#{topics.name}</if>
+			<if test="topics.readed!=null">,#{topics.readed}</if>
+			<if test="topics.readedplan!=null">,#{topics.readedplan}</if>
+			<if test="topics.liked!=null">,#{topics.liked}</if>
+			<if test="topics.likedplan!=null">,#{topics.likedplan}</if>
+			<if test="topics.collected!=null">,#{topics.collected}</if>
+			<if test="topics.collectedplan!=null">,#{topics.collectedplan}</if>
+			<if test="topics.oldid!=null">,#{topics.oldid}</if>
+			<if test="topics.content!=null">,#{topics.content}</if>
+			
+		)
+	</insert>
+	
+<!--	<delete id="delTopicsByPrimaryKey" parameterType="Integer">
+		delete from <include refid="table" />
+		where 
+			id=#{id}
+	</delete> -->	
+	
+	<update id="updTopicsByPrimaryKey" parameterType="com.is.web.bmw.entity.sql.entity.Topics">
+		update <include refid="table" />	TA
+		<include refid="update" /> 
+		where 
+		id=#{topics.id}
+	</update>
+	
+
+	<select id="getResultForSelectParamBySearch" parameterType="String" resultType="Map">
+		select ${selectParam} TA
+		<where> 
+		<include refid="qualification" />
+		</where>
+		<include refid="groupbys" />
+		<include refid="orderbys" />	
+	</select>
+	
+	<select id="getResultForSelectParam" parameterType="String" resultType="Map">
+		select ${selectParam} 
+	</select>
+	
+	<select id="getTopicsByPrimaryKey" parameterType="com.is.web.bmw.entity.sql.entity.Topics" resultMap="topicsMapper">
+		<include refid="selectSql" />
+		where 
+					TA.id=#{topics.id}
+	</select>
+		
+	<select id="getAllTopicsBySearch" parameterType="com.is.web.bmw.entity.sql.entity.Topics" resultMap="topicsMapper">
+		<include refid="selectSql" /> 
+		<where> 
+		<include refid="qualification" />
+		</where>
+		<include refid="groupbys" />
+		<include refid="orderbys" />
+	</select>
+
+	<select id="getAllTopicsBySearchKey" parameterType="List" resultMap="topicsMapper">
+		<include refid="TopicsWithSearchKeyByPage" />
+		<include refid="groupbys" />
+		<include refid="orderbys" />
+	</select>
+	
+	<select id="getAllTopicsByPage" parameterType="com.is.web.bmw.entity.sql.entity.Topics" resultMap="topicsMapper">
+		<include refid="selectSql" /> 
+		<where> 
+		<include refid="qualification" />
+		</where>
+		<include refid="groupbys" />
+		<include refid="orderbys" />
+		<include refid="pageLimit" />
+	</select>
+	
+	<select id="getCountForPage" parameterType="com.is.web.bmw.entity.sql.entity.Topics" resultType="int">
+		select count(id) from <include refid="table" /> TA 
+		<where> 
+		<include refid="qualification" />
+		</where>
+	</select>
+	
+	<select id="getAllTopicsWithSearchKeyByPage" parameterType="List" resultMap="topicsMapper">
+		<include refid="TopicsWithSearchKeyByPage" />
+		<include refid="groupbys" />
+		<include refid="orderbys" />
+		<include refid="pageLimit" />
+	</select>
+	
+	<select id="getCountWithSearchKeyForPage" parameterType="List" resultType="int">
+		select count(id) from (
+			<include refid="TopicsWithSearchKeyByPage" />
+		) TSUM
+	</select>
+	
+	<resultMap id="topicsMapper" type="com.is.web.bmw.entity.sql.entity.Topics">
+        <id property="id" column="id" />		<!-- id -->
+        <result property="name" column="name" />		<!-- name -->
+                <result property="readed" column="readed" />		<!-- readed -->
+                <result property="readedplan" column="readedplan" />		<!-- readedplan -->
+                <result property="liked" column="liked" />		<!-- liked -->
+                <result property="likedplan" column="likedplan" />		<!-- likedplan -->
+                <result property="collected" column="collected" />		<!-- collected -->
+                <result property="collectedplan" column="collectedplan" />		<!-- collectedplan -->
+                <result property="oldid" column="oldid" />		<!-- oldid -->
+                <result property="content" column="content" />		<!-- content -->
+            </resultMap>
+    
+    <sql id="TopicsWithSearchKeyByPage">
+		<foreach item="topics" index="index" collection="topicsList" separator="UNION">
+		<include refid="selectSql" /> 
+		<where> 
+			<include refid="qualification" />
+		</where>
+		</foreach>
+	</sql>
+	
+	<sql id="table">
+		t_topics
+	</sql>
+
+	<sql id="selectColum">
+		<choose>
+		<when test="topics.selectCols!=null and topics.selectCols.size>0">
+		<foreach item="item" index="index" collection="topics.selectCols" open="" separator="," close="">${item}</foreach>
+		</when>
+		<otherwise>
+			id,name,readed,readedplan,liked,likedplan,collected,collectedplan,oldid,content
+		</otherwise>
+		</choose>
+	</sql>
+	
+	<sql id="selectSql">
+		select <include refid="selectColum" /> 
+		from <include refid="table" /> TA
+	</sql>
+	
+	<sql id="qualification">
+	<if test="null!=topics">
+<!-- 			<if test="topics.id!=null or 
+					topics.compareCols.idBetweenType!=null or
+    				topics.compareCols.idGreaterThan!=null or
+    				topics.compareCols.idLessThan!=null"> and  
+    				<choose>
+    					<when test="topics.compareCols.idGreaterThan!=null
+	        					and topics.compareCols.idLessThan!=null
+	        					and topics.compareCols.idBetweenType!=null">
+	        				<![CDATA[#{topics.compareCols.idGreaterThan} < TA.id ]]>
+	        				<choose><when test="topics.compareCols.idBetweenType=='and'"> and </when><otherwise> or </otherwise></choose>
+	        				<![CDATA[#{topics.compareCols.idLessThan} > TA.id]]>
+	        			</when>
+    					<when test="topics.compareCols.idGreaterThan!=null
+	        					and topics.compareCols.idLessThan!=null">
+	        				<choose>
+	        				<when test="topics.compareCols.idGreaterThan==topics.compareCols.idLessThan">
+	        					TA.id =#{topics.idGreaterThan}
+	        				</when>
+	        				<otherwise>
+		        				<![CDATA[#{topics.compareCols.idGreaterThan} < TA.id ]]>
+	        				<choose><when test="topics.compareCols.idGreaterThan>topics.compareCols.idLessThan"> or </when><otherwise> and </otherwise></choose>
+	        				<![CDATA[#{topics.compareCols.idLessThan} > TA.id]]>
+	        				</otherwise>
+	        				</choose>
+	        			</when>
+    					<when test="topics.compareCols.idGreaterThan!=null">
+	        				<![CDATA[#{topics.compareCols.idGreaterThan} < TA.id]]>
+	        			</when>
+    					<when test="topics.compareCols.idLessThan!=null">
+	        				<![CDATA[#{topics.compareCols.idLessThan} > TA.id]]>
+	        			</when>
+	        			<otherwise>
+	        				TA.id =#{topics.id}
+	        			</otherwise>
+    				</choose>
+			</if>
+			<if test="topics.compareCols.idMults!=null and topics.compareCols.idMults.length>0"> and  
+	        		TA.id in <foreach item="item" index="index" collection="topics.compareCols.idMults" open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="topics.compareCols.idStr!=null"> and  
+	        		TA.id like concat('%','#{topics.compareCols.idStr}','%')
+			</if>
+ -->
+		<if test="topics.name!=null and topics.name!=''"> and  
+			<choose>
+				<when test="topics.name.indexOf(' ')>=0">
+        			<foreach item="item" index="index" collection="topics.name.split(' ')" open="(" separator=" " close=")"><if test="index>0"> or </if> TA.name like concat('%',${item},'%') </foreach>
+        		</when>
+        		<when test="topics.name.indexOf('+')>=0">
+        			TA.name like concat('%','${topics.name.replace("+", "%")}','%')
+        		</when>
+        		<when test="topics.name.startsWith('!')">
+        			TA.name !='${topics.name.replace("!", "")}'
+        		</when>
+				<when test="topics.name.startsWith('=')">
+        			TA.name ='${topics.name.replace("=", "")}'
+        		</when>
+        		<otherwise>
+        			TA.name like concat('%','${topics.name.replace("%", "")}','%')
+        		</otherwise>
+			</choose>
+		</if>
+			<if test="topics.readed!=null or 
+					topics.compareCols.readedBetweenType!=null or
+    				topics.compareCols.readedGreaterThan!=null or
+    				topics.compareCols.readedLessThan!=null"> and  
+    				<choose>
+    					<when test="topics.compareCols.readedGreaterThan!=null
+	        					and topics.compareCols.readedLessThan!=null
+	        					and topics.compareCols.readedBetweenType!=null">
+	        				<![CDATA[#{topics.compareCols.readedGreaterThan} < TA.readed ]]>
+	        				<choose><when test="topics.compareCols.readedBetweenType=='and'"> and </when><otherwise> or </otherwise></choose>
+	        				<![CDATA[#{topics.compareCols.readedLessThan} > TA.readed]]>
+	        			</when>
+    					<when test="topics.compareCols.readedGreaterThan!=null
+	        					and topics.compareCols.readedLessThan!=null">
+	        				<choose>
+	        				<when test="topics.compareCols.readedGreaterThan==topics.compareCols.readedLessThan">
+	        					TA.readed =#{topics.readedGreaterThan}
+	        				</when>
+	        				<otherwise>
+		        				<![CDATA[#{topics.compareCols.readedGreaterThan} < TA.readed ]]>
+	        				<choose><when test="topics.compareCols.readedGreaterThan>topics.compareCols.readedLessThan"> or </when><otherwise> and </otherwise></choose>
+	        				<![CDATA[#{topics.compareCols.readedLessThan} > TA.readed]]>
+	        				</otherwise>
+	        				</choose>
+	        			</when>
+    					<when test="topics.compareCols.readedGreaterThan!=null">
+	        				<![CDATA[#{topics.compareCols.readedGreaterThan} < TA.readed]]>
+	        			</when>
+    					<when test="topics.compareCols.readedLessThan!=null">
+	        				<![CDATA[#{topics.compareCols.readedLessThan} > TA.readed]]>
+	        			</when>
+	        			<otherwise>
+	        				TA.readed =#{topics.readed}
+	        			</otherwise>
+    				</choose>
+			</if>
+			<if test="topics.compareCols.readedMults!=null and topics.compareCols.readedMults.length>0"> and  
+	        		TA.readed in <foreach item="item" index="index" collection="topics.compareCols.readedMults" open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="topics.compareCols.readedStr!=null"> and  
+	        		TA.readed like concat('%','#{topics.compareCols.readedStr}','%')
+			</if>
+			<if test="topics.readedplan!=null or 
+					topics.compareCols.readedplanBetweenType!=null or
+    				topics.compareCols.readedplanGreaterThan!=null or
+    				topics.compareCols.readedplanLessThan!=null"> and  
+    				<choose>
+    					<when test="topics.compareCols.readedplanGreaterThan!=null
+	        					and topics.compareCols.readedplanLessThan!=null
+	        					and topics.compareCols.readedplanBetweenType!=null">
+	        				<![CDATA[#{topics.compareCols.readedplanGreaterThan} < TA.readedplan ]]>
+	        				<choose><when test="topics.compareCols.readedplanBetweenType=='and'"> and </when><otherwise> or </otherwise></choose>
+	        				<![CDATA[#{topics.compareCols.readedplanLessThan} > TA.readedplan]]>
+	        			</when>
+    					<when test="topics.compareCols.readedplanGreaterThan!=null
+	        					and topics.compareCols.readedplanLessThan!=null">
+	        				<choose>
+	        				<when test="topics.compareCols.readedplanGreaterThan==topics.compareCols.readedplanLessThan">
+	        					TA.readedplan =#{topics.readedplanGreaterThan}
+	        				</when>
+	        				<otherwise>
+		        				<![CDATA[#{topics.compareCols.readedplanGreaterThan} < TA.readedplan ]]>
+	        				<choose><when test="topics.compareCols.readedplanGreaterThan>topics.compareCols.readedplanLessThan"> or </when><otherwise> and </otherwise></choose>
+	        				<![CDATA[#{topics.compareCols.readedplanLessThan} > TA.readedplan]]>
+	        				</otherwise>
+	        				</choose>
+	        			</when>
+    					<when test="topics.compareCols.readedplanGreaterThan!=null">
+	        				<![CDATA[#{topics.compareCols.readedplanGreaterThan} < TA.readedplan]]>
+	        			</when>
+    					<when test="topics.compareCols.readedplanLessThan!=null">
+	        				<![CDATA[#{topics.compareCols.readedplanLessThan} > TA.readedplan]]>
+	        			</when>
+	        			<otherwise>
+	        				TA.readedplan =#{topics.readedplan}
+	        			</otherwise>
+    				</choose>
+			</if>
+			<if test="topics.compareCols.readedplanMults!=null and topics.compareCols.readedplanMults.length>0"> and  
+	        		TA.readedplan in <foreach item="item" index="index" collection="topics.compareCols.readedplanMults" open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="topics.compareCols.readedplanStr!=null"> and  
+	        		TA.readedplan like concat('%','#{topics.compareCols.readedplanStr}','%')
+			</if>
+			<if test="topics.liked!=null or 
+					topics.compareCols.likedBetweenType!=null or
+    				topics.compareCols.likedGreaterThan!=null or
+    				topics.compareCols.likedLessThan!=null"> and  
+    				<choose>
+    					<when test="topics.compareCols.likedGreaterThan!=null
+	        					and topics.compareCols.likedLessThan!=null
+	        					and topics.compareCols.likedBetweenType!=null">
+	        				<![CDATA[#{topics.compareCols.likedGreaterThan} < TA.liked ]]>
+	        				<choose><when test="topics.compareCols.likedBetweenType=='and'"> and </when><otherwise> or </otherwise></choose>
+	        				<![CDATA[#{topics.compareCols.likedLessThan} > TA.liked]]>
+	        			</when>
+    					<when test="topics.compareCols.likedGreaterThan!=null
+	        					and topics.compareCols.likedLessThan!=null">
+	        				<choose>
+	        				<when test="topics.compareCols.likedGreaterThan==topics.compareCols.likedLessThan">
+	        					TA.liked =#{topics.likedGreaterThan}
+	        				</when>
+	        				<otherwise>
+		        				<![CDATA[#{topics.compareCols.likedGreaterThan} < TA.liked ]]>
+	        				<choose><when test="topics.compareCols.likedGreaterThan>topics.compareCols.likedLessThan"> or </when><otherwise> and </otherwise></choose>
+	        				<![CDATA[#{topics.compareCols.likedLessThan} > TA.liked]]>
+	        				</otherwise>
+	        				</choose>
+	        			</when>
+    					<when test="topics.compareCols.likedGreaterThan!=null">
+	        				<![CDATA[#{topics.compareCols.likedGreaterThan} < TA.liked]]>
+	        			</when>
+    					<when test="topics.compareCols.likedLessThan!=null">
+	        				<![CDATA[#{topics.compareCols.likedLessThan} > TA.liked]]>
+	        			</when>
+	        			<otherwise>
+	        				TA.liked =#{topics.liked}
+	        			</otherwise>
+    				</choose>
+			</if>
+			<if test="topics.compareCols.likedMults!=null and topics.compareCols.likedMults.length>0"> and  
+	        		TA.liked in <foreach item="item" index="index" collection="topics.compareCols.likedMults" open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="topics.compareCols.likedStr!=null"> and  
+	        		TA.liked like concat('%','#{topics.compareCols.likedStr}','%')
+			</if>
+			<if test="topics.likedplan!=null or 
+					topics.compareCols.likedplanBetweenType!=null or
+    				topics.compareCols.likedplanGreaterThan!=null or
+    				topics.compareCols.likedplanLessThan!=null"> and  
+    				<choose>
+    					<when test="topics.compareCols.likedplanGreaterThan!=null
+	        					and topics.compareCols.likedplanLessThan!=null
+	        					and topics.compareCols.likedplanBetweenType!=null">
+	        				<![CDATA[#{topics.compareCols.likedplanGreaterThan} < TA.likedplan ]]>
+	        				<choose><when test="topics.compareCols.likedplanBetweenType=='and'"> and </when><otherwise> or </otherwise></choose>
+	        				<![CDATA[#{topics.compareCols.likedplanLessThan} > TA.likedplan]]>
+	        			</when>
+    					<when test="topics.compareCols.likedplanGreaterThan!=null
+	        					and topics.compareCols.likedplanLessThan!=null">
+	        				<choose>
+	        				<when test="topics.compareCols.likedplanGreaterThan==topics.compareCols.likedplanLessThan">
+	        					TA.likedplan =#{topics.likedplanGreaterThan}
+	        				</when>
+	        				<otherwise>
+		        				<![CDATA[#{topics.compareCols.likedplanGreaterThan} < TA.likedplan ]]>
+	        				<choose><when test="topics.compareCols.likedplanGreaterThan>topics.compareCols.likedplanLessThan"> or </when><otherwise> and </otherwise></choose>
+	        				<![CDATA[#{topics.compareCols.likedplanLessThan} > TA.likedplan]]>
+	        				</otherwise>
+	        				</choose>
+	        			</when>
+    					<when test="topics.compareCols.likedplanGreaterThan!=null">
+	        				<![CDATA[#{topics.compareCols.likedplanGreaterThan} < TA.likedplan]]>
+	        			</when>
+    					<when test="topics.compareCols.likedplanLessThan!=null">
+	        				<![CDATA[#{topics.compareCols.likedplanLessThan} > TA.likedplan]]>
+	        			</when>
+	        			<otherwise>
+	        				TA.likedplan =#{topics.likedplan}
+	        			</otherwise>
+    				</choose>
+			</if>
+			<if test="topics.compareCols.likedplanMults!=null and topics.compareCols.likedplanMults.length>0"> and  
+	        		TA.likedplan in <foreach item="item" index="index" collection="topics.compareCols.likedplanMults" open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="topics.compareCols.likedplanStr!=null"> and  
+	        		TA.likedplan like concat('%','#{topics.compareCols.likedplanStr}','%')
+			</if>
+			<if test="topics.collected!=null or 
+					topics.compareCols.collectedBetweenType!=null or
+    				topics.compareCols.collectedGreaterThan!=null or
+    				topics.compareCols.collectedLessThan!=null"> and  
+    				<choose>
+    					<when test="topics.compareCols.collectedGreaterThan!=null
+	        					and topics.compareCols.collectedLessThan!=null
+	        					and topics.compareCols.collectedBetweenType!=null">
+	        				<![CDATA[#{topics.compareCols.collectedGreaterThan} < TA.collected ]]>
+	        				<choose><when test="topics.compareCols.collectedBetweenType=='and'"> and </when><otherwise> or </otherwise></choose>
+	        				<![CDATA[#{topics.compareCols.collectedLessThan} > TA.collected]]>
+	        			</when>
+    					<when test="topics.compareCols.collectedGreaterThan!=null
+	        					and topics.compareCols.collectedLessThan!=null">
+	        				<choose>
+	        				<when test="topics.compareCols.collectedGreaterThan==topics.compareCols.collectedLessThan">
+	        					TA.collected =#{topics.collectedGreaterThan}
+	        				</when>
+	        				<otherwise>
+		        				<![CDATA[#{topics.compareCols.collectedGreaterThan} < TA.collected ]]>
+	        				<choose><when test="topics.compareCols.collectedGreaterThan>topics.compareCols.collectedLessThan"> or </when><otherwise> and </otherwise></choose>
+	        				<![CDATA[#{topics.compareCols.collectedLessThan} > TA.collected]]>
+	        				</otherwise>
+	        				</choose>
+	        			</when>
+    					<when test="topics.compareCols.collectedGreaterThan!=null">
+	        				<![CDATA[#{topics.compareCols.collectedGreaterThan} < TA.collected]]>
+	        			</when>
+    					<when test="topics.compareCols.collectedLessThan!=null">
+	        				<![CDATA[#{topics.compareCols.collectedLessThan} > TA.collected]]>
+	        			</when>
+	        			<otherwise>
+	        				TA.collected =#{topics.collected}
+	        			</otherwise>
+    				</choose>
+			</if>
+			<if test="topics.compareCols.collectedMults!=null and topics.compareCols.collectedMults.length>0"> and  
+	        		TA.collected in <foreach item="item" index="index" collection="topics.compareCols.collectedMults" open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="topics.compareCols.collectedStr!=null"> and  
+	        		TA.collected like concat('%','#{topics.compareCols.collectedStr}','%')
+			</if>
+			<if test="topics.collectedplan!=null or 
+					topics.compareCols.collectedplanBetweenType!=null or
+    				topics.compareCols.collectedplanGreaterThan!=null or
+    				topics.compareCols.collectedplanLessThan!=null"> and  
+    				<choose>
+    					<when test="topics.compareCols.collectedplanGreaterThan!=null
+	        					and topics.compareCols.collectedplanLessThan!=null
+	        					and topics.compareCols.collectedplanBetweenType!=null">
+	        				<![CDATA[#{topics.compareCols.collectedplanGreaterThan} < TA.collectedplan ]]>
+	        				<choose><when test="topics.compareCols.collectedplanBetweenType=='and'"> and </when><otherwise> or </otherwise></choose>
+	        				<![CDATA[#{topics.compareCols.collectedplanLessThan} > TA.collectedplan]]>
+	        			</when>
+    					<when test="topics.compareCols.collectedplanGreaterThan!=null
+	        					and topics.compareCols.collectedplanLessThan!=null">
+	        				<choose>
+	        				<when test="topics.compareCols.collectedplanGreaterThan==topics.compareCols.collectedplanLessThan">
+	        					TA.collectedplan =#{topics.collectedplanGreaterThan}
+	        				</when>
+	        				<otherwise>
+		        				<![CDATA[#{topics.compareCols.collectedplanGreaterThan} < TA.collectedplan ]]>
+	        				<choose><when test="topics.compareCols.collectedplanGreaterThan>topics.compareCols.collectedplanLessThan"> or </when><otherwise> and </otherwise></choose>
+	        				<![CDATA[#{topics.compareCols.collectedplanLessThan} > TA.collectedplan]]>
+	        				</otherwise>
+	        				</choose>
+	        			</when>
+    					<when test="topics.compareCols.collectedplanGreaterThan!=null">
+	        				<![CDATA[#{topics.compareCols.collectedplanGreaterThan} < TA.collectedplan]]>
+	        			</when>
+    					<when test="topics.compareCols.collectedplanLessThan!=null">
+	        				<![CDATA[#{topics.compareCols.collectedplanLessThan} > TA.collectedplan]]>
+	        			</when>
+	        			<otherwise>
+	        				TA.collectedplan =#{topics.collectedplan}
+	        			</otherwise>
+    				</choose>
+			</if>
+			<if test="topics.compareCols.collectedplanMults!=null and topics.compareCols.collectedplanMults.length>0"> and  
+	        		TA.collectedplan in <foreach item="item" index="index" collection="topics.compareCols.collectedplanMults" open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="topics.compareCols.collectedplanStr!=null"> and  
+	        		TA.collectedplan like concat('%','#{topics.compareCols.collectedplanStr}','%')
+			</if>
+
+		<if test="topics.oldid!=null and topics.oldid!=''"> and  
+			<choose>
+				<when test="topics.oldid.indexOf(' ')>=0">
+        			<foreach item="item" index="index" collection="topics.oldid.split(' ')" open="(" separator=" " close=")"><if test="index>0"> or </if> TA.oldid like concat('%',${item},'%') </foreach>
+        		</when>
+        		<when test="topics.oldid.indexOf('+')>=0">
+        			TA.oldid like concat('%','${topics.oldid.replace("+", "%")}','%')
+        		</when>
+        		<when test="topics.oldid.startsWith('!')">
+        			TA.oldid !='${topics.oldid.replace("!", "")}'
+        		</when>
+				<when test="topics.oldid.startsWith('=')">
+        			TA.oldid ='${topics.oldid.replace("=", "")}'
+        		</when>
+        		<otherwise>
+        			TA.oldid like concat('%','${topics.oldid.replace("%", "")}','%')
+        		</otherwise>
+			</choose>
+		</if>
+
+		<if test="topics.content!=null and topics.content!=''"> and  
+			<choose>
+				<when test="topics.content.indexOf(' ')>=0">
+        			<foreach item="item" index="index" collection="topics.content.split(' ')" open="(" separator=" " close=")"><if test="index>0"> or </if> TA.content like concat('%',${item},'%') </foreach>
+        		</when>
+        		<when test="topics.content.indexOf('+')>=0">
+        			TA.content like concat('%','${topics.content.replace("+", "%")}','%')
+        		</when>
+        		<when test="topics.content.startsWith('!')">
+        			TA.content !='${topics.content.replace("!", "")}'
+        		</when>
+				<when test="topics.content.startsWith('=')">
+        			TA.content ='${topics.content.replace("=", "")}'
+        		</when>
+        		<otherwise>
+        			TA.content like concat('%','${topics.content.replace("%", "")}','%')
+        		</otherwise>
+			</choose>
+		</if>
+	</if>
+	
+	<include refid="isNullColum" />
+	</sql>
+	
+	<sql id="isNullColum">
+		<if test="topics.isNullCols!=null and topics.isNullCols.size>0">
+		<foreach item="item" index="index" collection="topics.isNullCols" open="" separator=" " close=""> and (${item} IS NULL || ${item}='')</foreach>
+		</if>
+	</sql>
+	
+	<sql id="update">
+	<set>
+		<!-- 主键不作为查询条件传入不更新,
+		TA.id=#{topics.id}, 
+		-->
+		<if test="null!=topics.name"> 
+			TA.name=#{topics.name}, 
+		</if>
+		<if test="null!=topics.readed"> 
+			<choose>
+			<when test="null!=topics.updateInSqlColType.readed">
+				TA.readed=TA.readed
+				<choose>
+					<when test="topics.updateInSqlColType.readed.equalsIgnoreCase('/')">/</when>
+					<when test="topics.updateInSqlColType.readed.equalsIgnoreCase('-')">-</when>
+					<when test="topics.updateInSqlColType.readed.equalsIgnoreCase('*')">*</when>
+					<otherwise>+</otherwise>
+				</choose>
+				#{topics.readed}
+			</when>
+			<otherwise>
+				TA.readed=#{topics.readed}
+			</otherwise>
+			</choose>, 
+		</if>
+		<if test="null!=topics.readedplan"> 
+			<choose>
+			<when test="null!=topics.updateInSqlColType.readedplan">
+				TA.readedplan=TA.readedplan
+				<choose>
+					<when test="topics.updateInSqlColType.readedplan.equalsIgnoreCase('/')">/</when>
+					<when test="topics.updateInSqlColType.readedplan.equalsIgnoreCase('-')">-</when>
+					<when test="topics.updateInSqlColType.readedplan.equalsIgnoreCase('*')">*</when>
+					<otherwise>+</otherwise>
+				</choose>
+				#{topics.readedplan}
+			</when>
+			<otherwise>
+				TA.readedplan=#{topics.readedplan}
+			</otherwise>
+			</choose>, 
+		</if>
+		<if test="null!=topics.liked"> 
+			<choose>
+			<when test="null!=topics.updateInSqlColType.liked">
+				TA.liked=TA.liked
+				<choose>
+					<when test="topics.updateInSqlColType.liked.equalsIgnoreCase('/')">/</when>
+					<when test="topics.updateInSqlColType.liked.equalsIgnoreCase('-')">-</when>
+					<when test="topics.updateInSqlColType.liked.equalsIgnoreCase('*')">*</when>
+					<otherwise>+</otherwise>
+				</choose>
+				#{topics.liked}
+			</when>
+			<otherwise>
+				TA.liked=#{topics.liked}
+			</otherwise>
+			</choose>, 
+		</if>
+		<if test="null!=topics.likedplan"> 
+			<choose>
+			<when test="null!=topics.updateInSqlColType.likedplan">
+				TA.likedplan=TA.likedplan
+				<choose>
+					<when test="topics.updateInSqlColType.likedplan.equalsIgnoreCase('/')">/</when>
+					<when test="topics.updateInSqlColType.likedplan.equalsIgnoreCase('-')">-</when>
+					<when test="topics.updateInSqlColType.likedplan.equalsIgnoreCase('*')">*</when>
+					<otherwise>+</otherwise>
+				</choose>
+				#{topics.likedplan}
+			</when>
+			<otherwise>
+				TA.likedplan=#{topics.likedplan}
+			</otherwise>
+			</choose>, 
+		</if>
+		<if test="null!=topics.collected"> 
+			<choose>
+			<when test="null!=topics.updateInSqlColType.collected">
+				TA.collected=TA.collected
+				<choose>
+					<when test="topics.updateInSqlColType.collected.equalsIgnoreCase('/')">/</when>
+					<when test="topics.updateInSqlColType.collected.equalsIgnoreCase('-')">-</when>
+					<when test="topics.updateInSqlColType.collected.equalsIgnoreCase('*')">*</when>
+					<otherwise>+</otherwise>
+				</choose>
+				#{topics.collected}
+			</when>
+			<otherwise>
+				TA.collected=#{topics.collected}
+			</otherwise>
+			</choose>, 
+		</if>
+		<if test="null!=topics.collectedplan"> 
+			<choose>
+			<when test="null!=topics.updateInSqlColType.collectedplan">
+				TA.collectedplan=TA.collectedplan
+				<choose>
+					<when test="topics.updateInSqlColType.collectedplan.equalsIgnoreCase('/')">/</when>
+					<when test="topics.updateInSqlColType.collectedplan.equalsIgnoreCase('-')">-</when>
+					<when test="topics.updateInSqlColType.collectedplan.equalsIgnoreCase('*')">*</when>
+					<otherwise>+</otherwise>
+				</choose>
+				#{topics.collectedplan}
+			</when>
+			<otherwise>
+				TA.collectedplan=#{topics.collectedplan}
+			</otherwise>
+			</choose>, 
+		</if>
+		<if test="null!=topics.oldid"> 
+			TA.oldid=#{topics.oldid}, 
+		</if>
+		<if test="null!=topics.content"> 
+			TA.content=#{topics.content}, 
+		</if>
+	</set>
+	</sql>
+
+
+	<sql id="orderbys">
+		<if test="null!= topics and null!= topics.orderBys and topics.orderBys.size>0">
+			order by
+				${topics.orderBys.TABLEORDERBYSTR}
+		</if>
+	</sql>
+	
+	<sql id="groupbys">
+		<if test="null!= topics and null!= topics.groupBys and topics.groupBys!=''">
+			group by
+				${topics.groupBys}
+		</if>
+	</sql>
+	
+	<!-- BEGIN 字典字段转换检索 -->
+	<!-- END 字典字段转换检索 -->
+	
+	<sql id="startSql">
+		select * from (
+	</sql>
+
+	<sql id="endSql">
+		 ) b <include refid="pageLimit" />
+	</sql>
+
+	<sql id="pageLimit">
+		<![CDATA[ limit ${startIndex},${endIndex}]]>
+	</sql>
+
+</mapper>

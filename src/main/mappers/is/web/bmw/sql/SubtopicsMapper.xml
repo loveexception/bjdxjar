@@ -1,0 +1,493 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+    <!DOCTYPE mapper 
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mappers.is.web.bmw.sql.SubtopicsMapper">
+	<insert id="addSubtopics" parameterType="com.is.web.bmw.entity.sql.entity.Subtopics" useGeneratedKeys="true" keyProperty="subtopics.id">
+		insert into <include refid="table" />(
+			id
+			<if test="subtopics.tid!=null">,tid</if>
+			<if test="subtopics.context!=null">,context</if>
+			<if test="subtopics.pid!=null">,pid</if>
+			<if test="subtopics.send!=null">,send</if>
+			<if test="subtopics.plan!=null">,plan</if>
+			<if test="subtopics.status!=null">,status</if>
+			
+		)values(
+			#{subtopics.id}
+			<if test="subtopics.tid!=null">,#{subtopics.tid}</if>
+			<if test="subtopics.context!=null">,#{subtopics.context}</if>
+			<if test="subtopics.pid!=null">,#{subtopics.pid}</if>
+			<if test="subtopics.send!=null">,#{subtopics.send,jdbcType=TIMESTAMP}</if>
+			<if test="subtopics.plan!=null">,#{subtopics.plan,jdbcType=TIMESTAMP}</if>
+			<if test="subtopics.status!=null">,#{subtopics.status}</if>
+			
+		)
+	</insert>
+	
+<!--	<delete id="delSubtopicsByPrimaryKey" parameterType="Integer">
+		delete from <include refid="table" />
+		where 
+			id=#{id}
+	</delete> -->	
+	
+	<update id="updSubtopicsByPrimaryKey" parameterType="com.is.web.bmw.entity.sql.entity.Subtopics">
+		update <include refid="table" />	TA
+		<include refid="update" /> 
+		where 
+		id=#{subtopics.id}
+	</update>
+	
+
+	<select id="getResultForSelectParamBySearch" parameterType="String" resultType="Map">
+		select ${selectParam} TA
+		<where> 
+		<include refid="qualification" />
+		</where>
+		<include refid="groupbys" />
+		<include refid="orderbys" />	
+	</select>
+	
+	<select id="getResultForSelectParam" parameterType="String" resultType="Map">
+		select ${selectParam} 
+	</select>
+	
+	<select id="getSubtopicsByPrimaryKey" parameterType="com.is.web.bmw.entity.sql.entity.Subtopics" resultMap="subtopicsMapper">
+		<include refid="selectSql" />
+		where 
+					TA.id=#{subtopics.id}
+	</select>
+		
+	<select id="getAllSubtopicsBySearch" parameterType="com.is.web.bmw.entity.sql.entity.Subtopics" resultMap="subtopicsMapper">
+		<include refid="selectSql" /> 
+		<where> 
+		<include refid="qualification" />
+		</where>
+		<include refid="groupbys" />
+		<include refid="orderbys" />
+	</select>
+
+	<select id="getAllSubtopicsBySearchKey" parameterType="List" resultMap="subtopicsMapper">
+		<include refid="SubtopicsWithSearchKeyByPage" />
+		<include refid="groupbys" />
+		<include refid="orderbys" />
+	</select>
+	
+	<select id="getAllSubtopicsByPage" parameterType="com.is.web.bmw.entity.sql.entity.Subtopics" resultMap="subtopicsMapper">
+		<include refid="selectSql" /> 
+		<where> 
+		<include refid="qualification" />
+		</where>
+		<include refid="groupbys" />
+		<include refid="orderbys" />
+		<include refid="pageLimit" />
+	</select>
+	
+	<select id="getCountForPage" parameterType="com.is.web.bmw.entity.sql.entity.Subtopics" resultType="int">
+		select count(id) from <include refid="table" /> TA 
+		<where> 
+		<include refid="qualification" />
+		</where>
+	</select>
+	
+	<select id="getAllSubtopicsWithSearchKeyByPage" parameterType="List" resultMap="subtopicsMapper">
+		<include refid="SubtopicsWithSearchKeyByPage" />
+		<include refid="groupbys" />
+		<include refid="orderbys" />
+		<include refid="pageLimit" />
+	</select>
+	
+	<select id="getCountWithSearchKeyForPage" parameterType="List" resultType="int">
+		select count(id) from (
+			<include refid="SubtopicsWithSearchKeyByPage" />
+		) TSUM
+	</select>
+	
+	<resultMap id="subtopicsMapper" type="com.is.web.bmw.entity.sql.entity.Subtopics">
+        <id property="id" column="id" />		<!-- id -->
+        <result property="tid" column="tid" />		<!-- tid -->
+                <result property="context" column="context" />		<!-- context -->
+                <result property="pid" column="pid" />		<!-- pid -->
+                <result property="send" column="send" />		<!-- send -->
+                <result property="plan" column="plan" />		<!-- plan -->
+                <result property="status" column="status" />		<!-- status -->
+            </resultMap>
+    
+    <sql id="SubtopicsWithSearchKeyByPage">
+		<foreach item="subtopics" index="index" collection="subtopicsList" separator="UNION">
+		<include refid="selectSql" /> 
+		<where> 
+			<include refid="qualification" />
+		</where>
+		</foreach>
+	</sql>
+	
+	<sql id="table">
+		t_subtopics
+	</sql>
+
+	<sql id="selectColum">
+		<choose>
+		<when test="subtopics.selectCols!=null and subtopics.selectCols.size>0">
+		<foreach item="item" index="index" collection="subtopics.selectCols" open="" separator="," close="">${item}</foreach>
+		</when>
+		<otherwise>
+			id,tid,context,pid,send,plan,status
+		</otherwise>
+		</choose>
+	</sql>
+	
+	<sql id="selectSql">
+		select <include refid="selectColum" /> 
+<!--			,<include refid="status_CHN" />	-->
+		from <include refid="table" /> TA
+	</sql>
+	
+	<sql id="qualification">
+	<if test="null!=subtopics">
+<!-- 			<if test="subtopics.id!=null or 
+					subtopics.compareCols.idBetweenType!=null or
+    				subtopics.compareCols.idGreaterThan!=null or
+    				subtopics.compareCols.idLessThan!=null"> and  
+    				<choose>
+    					<when test="subtopics.compareCols.idGreaterThan!=null
+	        					and subtopics.compareCols.idLessThan!=null
+	        					and subtopics.compareCols.idBetweenType!=null">
+	        				<![CDATA[#{subtopics.compareCols.idGreaterThan} < TA.id ]]>
+	        				<choose><when test="subtopics.compareCols.idBetweenType=='and'"> and </when><otherwise> or </otherwise></choose>
+	        				<![CDATA[#{subtopics.compareCols.idLessThan} > TA.id]]>
+	        			</when>
+    					<when test="subtopics.compareCols.idGreaterThan!=null
+	        					and subtopics.compareCols.idLessThan!=null">
+	        				<choose>
+	        				<when test="subtopics.compareCols.idGreaterThan==subtopics.compareCols.idLessThan">
+	        					TA.id =#{subtopics.idGreaterThan}
+	        				</when>
+	        				<otherwise>
+		        				<![CDATA[#{subtopics.compareCols.idGreaterThan} < TA.id ]]>
+	        				<choose><when test="subtopics.compareCols.idGreaterThan>subtopics.compareCols.idLessThan"> or </when><otherwise> and </otherwise></choose>
+	        				<![CDATA[#{subtopics.compareCols.idLessThan} > TA.id]]>
+	        				</otherwise>
+	        				</choose>
+	        			</when>
+    					<when test="subtopics.compareCols.idGreaterThan!=null">
+	        				<![CDATA[#{subtopics.compareCols.idGreaterThan} < TA.id]]>
+	        			</when>
+    					<when test="subtopics.compareCols.idLessThan!=null">
+	        				<![CDATA[#{subtopics.compareCols.idLessThan} > TA.id]]>
+	        			</when>
+	        			<otherwise>
+	        				TA.id =#{subtopics.id}
+	        			</otherwise>
+    				</choose>
+			</if>
+			<if test="subtopics.compareCols.idMults!=null and subtopics.compareCols.idMults.length>0"> and  
+	        		TA.id in <foreach item="item" index="index" collection="subtopics.compareCols.idMults" open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="subtopics.compareCols.idStr!=null"> and  
+	        		TA.id like concat('%','#{subtopics.compareCols.idStr}','%')
+			</if>
+ -->			<if test="subtopics.tid!=null or 
+					subtopics.compareCols.tidBetweenType!=null or
+    				subtopics.compareCols.tidGreaterThan!=null or
+    				subtopics.compareCols.tidLessThan!=null"> and  
+    				<choose>
+    					<when test="subtopics.compareCols.tidGreaterThan!=null
+	        					and subtopics.compareCols.tidLessThan!=null
+	        					and subtopics.compareCols.tidBetweenType!=null">
+	        				<![CDATA[#{subtopics.compareCols.tidGreaterThan} < TA.tid ]]>
+	        				<choose><when test="subtopics.compareCols.tidBetweenType=='and'"> and </when><otherwise> or </otherwise></choose>
+	        				<![CDATA[#{subtopics.compareCols.tidLessThan} > TA.tid]]>
+	        			</when>
+    					<when test="subtopics.compareCols.tidGreaterThan!=null
+	        					and subtopics.compareCols.tidLessThan!=null">
+	        				<choose>
+	        				<when test="subtopics.compareCols.tidGreaterThan==subtopics.compareCols.tidLessThan">
+	        					TA.tid =#{subtopics.tidGreaterThan}
+	        				</when>
+	        				<otherwise>
+		        				<![CDATA[#{subtopics.compareCols.tidGreaterThan} < TA.tid ]]>
+	        				<choose><when test="subtopics.compareCols.tidGreaterThan>subtopics.compareCols.tidLessThan"> or </when><otherwise> and </otherwise></choose>
+	        				<![CDATA[#{subtopics.compareCols.tidLessThan} > TA.tid]]>
+	        				</otherwise>
+	        				</choose>
+	        			</when>
+    					<when test="subtopics.compareCols.tidGreaterThan!=null">
+	        				<![CDATA[#{subtopics.compareCols.tidGreaterThan} < TA.tid]]>
+	        			</when>
+    					<when test="subtopics.compareCols.tidLessThan!=null">
+	        				<![CDATA[#{subtopics.compareCols.tidLessThan} > TA.tid]]>
+	        			</when>
+	        			<otherwise>
+	        				TA.tid =#{subtopics.tid}
+	        			</otherwise>
+    				</choose>
+			</if>
+			<if test="subtopics.compareCols.tidMults!=null and subtopics.compareCols.tidMults.length>0"> and  
+	        		TA.tid in <foreach item="item" index="index" collection="subtopics.compareCols.tidMults" open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="subtopics.compareCols.tidStr!=null"> and  
+	        		TA.tid like concat('%','#{subtopics.compareCols.tidStr}','%')
+			</if>
+
+		<if test="subtopics.context!=null and subtopics.context!=''"> and  
+			<choose>
+				<when test="subtopics.context.indexOf(' ')>=0">
+        			<foreach item="item" index="index" collection="subtopics.context.split(' ')" open="(" separator=" " close=")"><if test="index>0"> or </if> TA.context like concat('%',${item},'%') </foreach>
+        		</when>
+        		<when test="subtopics.context.indexOf('+')>=0">
+        			TA.context like concat('%','${subtopics.context.replace("+", "%")}','%')
+        		</when>
+        		<when test="subtopics.context.startsWith('!')">
+        			TA.context !='${subtopics.context.replace("!", "")}'
+        		</when>
+				<when test="subtopics.context.startsWith('=')">
+        			TA.context ='${subtopics.context.replace("=", "")}'
+        		</when>
+        		<otherwise>
+        			TA.context like concat('%','${subtopics.context.replace("%", "")}','%')
+        		</otherwise>
+			</choose>
+		</if>
+			<if test="subtopics.pid!=null or 
+					subtopics.compareCols.pidBetweenType!=null or
+    				subtopics.compareCols.pidGreaterThan!=null or
+    				subtopics.compareCols.pidLessThan!=null"> and  
+    				<choose>
+    					<when test="subtopics.compareCols.pidGreaterThan!=null
+	        					and subtopics.compareCols.pidLessThan!=null
+	        					and subtopics.compareCols.pidBetweenType!=null">
+	        				<![CDATA[#{subtopics.compareCols.pidGreaterThan} < TA.pid ]]>
+	        				<choose><when test="subtopics.compareCols.pidBetweenType=='and'"> and </when><otherwise> or </otherwise></choose>
+	        				<![CDATA[#{subtopics.compareCols.pidLessThan} > TA.pid]]>
+	        			</when>
+    					<when test="subtopics.compareCols.pidGreaterThan!=null
+	        					and subtopics.compareCols.pidLessThan!=null">
+	        				<choose>
+	        				<when test="subtopics.compareCols.pidGreaterThan==subtopics.compareCols.pidLessThan">
+	        					TA.pid =#{subtopics.pidGreaterThan}
+	        				</when>
+	        				<otherwise>
+		        				<![CDATA[#{subtopics.compareCols.pidGreaterThan} < TA.pid ]]>
+	        				<choose><when test="subtopics.compareCols.pidGreaterThan>subtopics.compareCols.pidLessThan"> or </when><otherwise> and </otherwise></choose>
+	        				<![CDATA[#{subtopics.compareCols.pidLessThan} > TA.pid]]>
+	        				</otherwise>
+	        				</choose>
+	        			</when>
+    					<when test="subtopics.compareCols.pidGreaterThan!=null">
+	        				<![CDATA[#{subtopics.compareCols.pidGreaterThan} < TA.pid]]>
+	        			</when>
+    					<when test="subtopics.compareCols.pidLessThan!=null">
+	        				<![CDATA[#{subtopics.compareCols.pidLessThan} > TA.pid]]>
+	        			</when>
+	        			<otherwise>
+	        				TA.pid =#{subtopics.pid}
+	        			</otherwise>
+    				</choose>
+			</if>
+			<if test="subtopics.compareCols.pidMults!=null and subtopics.compareCols.pidMults.length>0"> and  
+	        		TA.pid in <foreach item="item" index="index" collection="subtopics.compareCols.pidMults" open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="subtopics.compareCols.pidStr!=null"> and  
+	        		TA.pid like concat('%','#{subtopics.compareCols.pidStr}','%')
+			</if>
+			<if test="subtopics.send!=null or 
+					subtopics.compareCols.sendBetweenType!=null or
+    				subtopics.compareCols.sendGreaterThan!=null or
+    				subtopics.compareCols.sendLessThan!=null"> and  
+    				<choose>
+    					<when test="subtopics.compareCols.sendGreaterThan!=null
+	        					and subtopics.compareCols.sendLessThan!=null
+	        					and subtopics.compareCols.sendBetweenType!=null">
+	        				<![CDATA[#{subtopics.compareCols.sendGreaterThan,jdbcType=TIMESTAMP} < TA.send ]]>
+	        				<choose><when test="subtopics.compareCols.sendBetweenType=='and'"> and </when><otherwise> or </otherwise></choose>
+	        				<![CDATA[#{subtopics.compareCols.sendLessThan,jdbcType=TIMESTAMP} > TA.send]]>
+	        			</when>
+    					<when test="subtopics.compareCols.sendGreaterThan!=null
+	        					and subtopics.compareCols.sendLessThan!=null">
+	        				<choose>
+	        				<when test="subtopics.compareCols.sendGreaterThan.equal(subtopics.compareCols.sendLessThan)">
+	        					TA.send =#{subtopics.sendGreaterThan,jdbcType=TIMESTAMP}
+	        				</when>
+	        				<otherwise>
+		        				<![CDATA[#{subtopics.compareCols.sendGreaterThan,jdbcType=TIMESTAMP} < TA.send ]]>
+	        				<choose><when test="subtopics.compareCols.sendGreaterThan.after(subtopics.compareCols.sendLessThan)"> or </when><otherwise> and </otherwise></choose>
+	        				<![CDATA[#{subtopics.compareCols.sendLessThan,jdbcType=TIMESTAMP} > TA.send]]>
+	        				</otherwise>
+	        				</choose>
+	        			</when>
+    					<when test="subtopics.compareCols.sendGreaterThan!=null">
+	        				<![CDATA[#{subtopics.compareCols.sendGreaterThan,jdbcType=TIMESTAMP} < TA.send]]>
+	        			</when>
+    					<when test="subtopics.compareCols.sendLessThan!=null">
+	        				<![CDATA[#{subtopics.compareCols.sendLessThan,jdbcType=TIMESTAMP} > TA.send]]>
+	        			</when>
+	        			<otherwise>
+	        				TA.send =#{subtopics.send,jdbcType=TIMESTAMP}
+	        			</otherwise>
+    				</choose>
+			</if>
+			<if test="subtopics.compareCols.sendMults!=null and subtopics.compareCols.sendMults.length>0"> and  
+	        		TA.send in <foreach item="item" index="index" collection="subtopics.compareCols.sendMults" open="(" separator="," close=")">#{item,jdbcType=TIMESTAMP}</foreach>
+			</if>
+			<if test="subtopics.compareCols.sendStr!=null"> and  
+	        		TA.send like concat('%','#{subtopics.compareCols.sendStr}','%')
+			</if>
+			<if test="subtopics.plan!=null or 
+					subtopics.compareCols.planBetweenType!=null or
+    				subtopics.compareCols.planGreaterThan!=null or
+    				subtopics.compareCols.planLessThan!=null"> and  
+    				<choose>
+    					<when test="subtopics.compareCols.planGreaterThan!=null
+	        					and subtopics.compareCols.planLessThan!=null
+	        					and subtopics.compareCols.planBetweenType!=null">
+	        				<![CDATA[#{subtopics.compareCols.planGreaterThan,jdbcType=TIMESTAMP} < TA.plan ]]>
+	        				<choose><when test="subtopics.compareCols.planBetweenType=='and'"> and </when><otherwise> or </otherwise></choose>
+	        				<![CDATA[#{subtopics.compareCols.planLessThan,jdbcType=TIMESTAMP} > TA.plan]]>
+	        			</when>
+    					<when test="subtopics.compareCols.planGreaterThan!=null
+	        					and subtopics.compareCols.planLessThan!=null">
+	        				<choose>
+	        				<when test="subtopics.compareCols.planGreaterThan.equal(subtopics.compareCols.planLessThan)">
+	        					TA.plan =#{subtopics.planGreaterThan,jdbcType=TIMESTAMP}
+	        				</when>
+	        				<otherwise>
+		        				<![CDATA[#{subtopics.compareCols.planGreaterThan,jdbcType=TIMESTAMP} < TA.plan ]]>
+	        				<choose><when test="subtopics.compareCols.planGreaterThan.after(subtopics.compareCols.planLessThan)"> or </when><otherwise> and </otherwise></choose>
+	        				<![CDATA[#{subtopics.compareCols.planLessThan,jdbcType=TIMESTAMP} > TA.plan]]>
+	        				</otherwise>
+	        				</choose>
+	        			</when>
+    					<when test="subtopics.compareCols.planGreaterThan!=null">
+	        				<![CDATA[#{subtopics.compareCols.planGreaterThan,jdbcType=TIMESTAMP} < TA.plan]]>
+	        			</when>
+    					<when test="subtopics.compareCols.planLessThan!=null">
+	        				<![CDATA[#{subtopics.compareCols.planLessThan,jdbcType=TIMESTAMP} > TA.plan]]>
+	        			</when>
+	        			<otherwise>
+	        				TA.plan =#{subtopics.plan,jdbcType=TIMESTAMP}
+	        			</otherwise>
+    				</choose>
+			</if>
+			<if test="subtopics.compareCols.planMults!=null and subtopics.compareCols.planMults.length>0"> and  
+	        		TA.plan in <foreach item="item" index="index" collection="subtopics.compareCols.planMults" open="(" separator="," close=")">#{item,jdbcType=TIMESTAMP}</foreach>
+			</if>
+			<if test="subtopics.compareCols.planStr!=null"> and  
+	        		TA.plan like concat('%','#{subtopics.compareCols.planStr}','%')
+			</if>
+
+		<if test="subtopics.status!=null and subtopics.status!=''"> and  
+			<choose>
+				<when test="subtopics.status.indexOf(',')>=0">
+        			TA.status in <foreach item="item" index="index" collection="subtopics.status.split(',')" open="(" separator="," close=")">#{item}</foreach>
+        		</when>
+        		<when test="subtopics.status.startsWith('!')">
+        			TA.status !='${subtopics.status.replace("!", "")}'
+        		</when>
+				<when test="subtopics.status.startsWith('=')">
+        			TA.status ='${subtopics.status.replace("=", "")}'
+        		</when>
+        		<otherwise>
+        			TA.status like concat('%','${subtopics.status.replace("%", "")}','%')
+        		</otherwise>
+			</choose>
+		</if>
+	</if>
+	
+	<include refid="isNullColum" />
+	</sql>
+	
+	<sql id="isNullColum">
+		<if test="subtopics.isNullCols!=null and subtopics.isNullCols.size>0">
+		<foreach item="item" index="index" collection="subtopics.isNullCols" open="" separator=" " close=""> and (${item} IS NULL || ${item}='')</foreach>
+		</if>
+	</sql>
+	
+	<sql id="update">
+	<set>
+		<!-- 主键不作为查询条件传入不更新,
+		TA.id=#{subtopics.id}, 
+		-->
+		<if test="null!=subtopics.tid"> 
+			<choose>
+			<when test="null!=subtopics.updateInSqlColType.tid">
+				TA.tid=TA.tid
+				<choose>
+					<when test="subtopics.updateInSqlColType.tid.equalsIgnoreCase('/')">/</when>
+					<when test="subtopics.updateInSqlColType.tid.equalsIgnoreCase('-')">-</when>
+					<when test="subtopics.updateInSqlColType.tid.equalsIgnoreCase('*')">*</when>
+					<otherwise>+</otherwise>
+				</choose>
+				#{subtopics.tid}
+			</when>
+			<otherwise>
+				TA.tid=#{subtopics.tid}
+			</otherwise>
+			</choose>, 
+		</if>
+		<if test="null!=subtopics.context"> 
+			TA.context=#{subtopics.context}, 
+		</if>
+		<if test="null!=subtopics.pid"> 
+			<choose>
+			<when test="null!=subtopics.updateInSqlColType.pid">
+				TA.pid=TA.pid
+				<choose>
+					<when test="subtopics.updateInSqlColType.pid.equalsIgnoreCase('/')">/</when>
+					<when test="subtopics.updateInSqlColType.pid.equalsIgnoreCase('-')">-</when>
+					<when test="subtopics.updateInSqlColType.pid.equalsIgnoreCase('*')">*</when>
+					<otherwise>+</otherwise>
+				</choose>
+				#{subtopics.pid}
+			</when>
+			<otherwise>
+				TA.pid=#{subtopics.pid}
+			</otherwise>
+			</choose>, 
+		</if>
+		<if test="null!=subtopics.send"> 
+			TA.send=#{subtopics.send,jdbcType=TIMESTAMP}, 
+		</if>
+		<if test="null!=subtopics.plan"> 
+			TA.plan=#{subtopics.plan,jdbcType=TIMESTAMP}, 
+		</if>
+		<if test="null!=subtopics.status"> 
+			TA.status=#{subtopics.status}, 
+		</if>
+	</set>
+	</sql>
+
+
+	<sql id="orderbys">
+		<if test="null!= subtopics and null!= subtopics.orderBys and subtopics.orderBys.size>0">
+			order by
+				${subtopics.orderBys.TABLEORDERBYSTR}
+		</if>
+	</sql>
+	
+	<sql id="groupbys">
+		<if test="null!= subtopics and null!= subtopics.groupBys and subtopics.groupBys!=''">
+			group by
+				${subtopics.groupBys}
+		</if>
+	</sql>
+	
+	<!-- BEGIN 字典字段转换检索 -->
+	<sql id="status_CHN">
+        <![CDATA[CASE TA.status WHEN "1" THEN '未执行'  WHEN "9" THEN '已发布'  WHEN "3" THEN '服务失败' END AS status_CHNVAL]]>
+	</sql>
+	<!-- END 字典字段转换检索 -->
+	
+	<sql id="startSql">
+		select * from (
+	</sql>
+
+	<sql id="endSql">
+		 ) b <include refid="pageLimit" />
+	</sql>
+
+	<sql id="pageLimit">
+		<![CDATA[ limit ${startIndex},${endIndex}]]>
+	</sql>
+
+</mapper>

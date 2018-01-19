@@ -1,0 +1,484 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+    <!DOCTYPE mapper 
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mappers.is.web.bmw.sql.LoginsExtendViewMapper">
+
+	<select id="getLoginsByPrimaryKeyWithJoin" parameterType="com.is.web.bmw.entity.sql.extend.LoginsExtend" resultMap="loginsExtendMapper">
+		<include refid="selectWithJoinSql" />
+		where 
+					TA.id=#{logins.id}
+	</select>
+
+	<select id="getAllLoginsBySearchWithJoin" parameterType="com.is.web.bmw.entity.sql.extend.LoginsExtend" resultMap="loginsExtendMapper">
+		<include refid="selectWithJoinSql" />
+		<where> 
+		<include refid="qualification" />
+		</where>
+		<include refid="groupbys" />
+		<include refid="orderbys" />
+	</select>
+	
+	<select id="getAllLoginsBySearchKeyWithJoin" parameterType="List" resultMap="loginsExtendMapper">
+		<include refid="LoginsByPageAndSearchKeyWithJoin" />
+		<include refid="groupbys" />
+		<include refid="orderbys" />
+	</select>
+
+	<select id="getAllLoginsByPageWithJoin" parameterType="com.is.web.bmw.entity.sql.extend.LoginsExtend" resultMap="loginsExtendMapper">
+		<include refid="selectWithJoinSql" />
+		<where> 
+		<include refid="qualification" />
+		</where>
+		<include refid="groupbys" />
+		<include refid="orderbys" />
+		<include refid="pageLimit" />
+	</select>
+
+	<select id="getCountForPageWithJoin" parameterType="com.is.web.bmw.entity.sql.extend.LoginsExtend" resultType="int">
+		select count(id) from <include refid="view" /> TA
+		<where> 
+		<include refid="qualification" />
+		</where>
+	</select>
+
+	<sql id="LoginsByPageAndSearchKeyWithJoin">
+		<foreach item="logins" index="index" collection="loginsExtendList" separator="UNION">
+		<include refid="selectWithJoinSql" />
+		<where> 
+			<include refid="qualification" />
+		</where>
+		</foreach>
+	</sql>
+	
+	<select id="getAllLoginsByPageAndSearchKeyWithJoin" parameterType="List" resultMap="loginsExtendMapper">
+		<include refid="LoginsByPageAndSearchKeyWithJoin" />
+		<include refid="groupbys" />
+		<include refid="orderbys" />
+		<include refid="pageLimit" />
+	</select>
+	
+	<select id="getCountForPageAndSearchKeyWithJoin" parameterType="List" resultType="int">
+		select count(id) from (
+		<include refid="LoginsByPageAndSearchKeyWithJoin" />
+		) TSUM
+	</select>
+
+	<sql id="selectColum">
+		<choose>
+		<when test="logins.selectCols!=null and logins.selectCols.size>0">
+		<foreach item="item" index="index" collection="logins.selectCols" open="" separator="," close="">${item}</foreach>
+		</when>
+		<otherwise>
+			id,pid,ip,port,stauts,plan,send,uid,updateTime
+			<include refid="pid_JOIN_t_persons_SELECT_SHOW" />
+		</otherwise>
+		</choose>
+	</sql>
+	
+	<sql id="selectWithJoinSql">
+		select <include refid="selectColum" />
+ 		<!-- t_logins 关联 t_persons 联合查询 -->  
+ 		 from <include refid="view" />  TA
+	</sql>
+
+	<!-- 输出创建视图sql语句 -->	
+
+	<!-- BEGIN pid_JOIN_t_persons -->
+	<sql id="pid_JOIN_t_persons_SELECT_SHOW">	
+		,pid_name
+		,pid_password
+	</sql>
+    <!-- END pid_JOIN_t_persons -->
+    
+	<!-- END 字段关联检索 -->
+
+	<sql id="qualification">
+	<if test="null!=logins">
+<!-- 			<if test="logins.id!=null or 
+					logins.compareCols.idBetweenType!=null or
+    				logins.compareCols.idGreaterThan!=null or
+    				logins.compareCols.idLessThan!=null"> and  
+    				<choose>
+    					<when test="logins.compareCols.idGreaterThan!=null
+	        					and logins.compareCols.idLessThan!=null
+	        					and logins.compareCols.idBetweenType!=null">
+	        				<![CDATA[#{logins.compareCols.idGreaterThan} < TA.id ]]>
+	        				<choose><when test="logins.compareCols.idBetweenType=='and'"> and </when><otherwise> or </otherwise></choose>
+	        				<![CDATA[#{logins.compareCols.idLessThan} > TA.id]]>
+	        			</when>
+    					<when test="logins.compareCols.idGreaterThan!=null
+	        					and logins.compareCols.idLessThan!=null">
+	        				<![CDATA[#{logins.compareCols.idGreaterThan} < TA.id ]]>
+	        				<choose><when test="logins.compareCols.idBetweenType>logins.compareCols.idLessThan"> or </when><otherwise> and </otherwise></choose>
+	        				<![CDATA[#{logins.compareCols.idLessThan} > TA.id]]>
+	        			</when>
+    					<when test="logins.compareCols.idGreaterThan!=null">
+	        				<![CDATA[#{logins.compareCols.idGreaterThan} < TA.id]]>
+	        			</when>
+    					<when test="logins.compareCols.idLessThan!=null">
+	        				<![CDATA[#{logins.compareCols.idLessThan} > TA.id]]>
+	        			</when>
+	        			<otherwise>
+	        				TA.id =#{logins.id}
+	        			</otherwise>
+    				</choose>
+			</if>
+			<if test="logins.compareCols.idMults!=null and logins.compareCols.idMults.length>0"> and  
+	        		TA.id in <foreach item="item" index="index" collection="logins.compareCols.idMults" open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="logins.compareCols.idMultsNot!=null and logins.compareCols.idMultsNot.length>0"> and  
+	        		TA.id not in <foreach item="item" index="index" collection="logins.compareCols.idMultsNot" open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="logins.compareCols.idStr!=null"> and  
+	        		TA.id like concat('%','#{logins.compareCols.idStr}','%')
+			</if>
+ -->			<if test="logins.pid!=null or 
+					logins.compareCols.pidBetweenType!=null or
+    				logins.compareCols.pidGreaterThan!=null or
+    				logins.compareCols.pidLessThan!=null"> and  
+    				<choose>
+    					<when test="logins.compareCols.pidGreaterThan!=null
+	        					and logins.compareCols.pidLessThan!=null
+	        					and logins.compareCols.pidBetweenType!=null">
+	        				<![CDATA[#{logins.compareCols.pidGreaterThan} < TA.pid ]]>
+	        				<choose><when test="logins.compareCols.pidBetweenType=='and'"> and </when><otherwise> or </otherwise></choose>
+	        				<![CDATA[#{logins.compareCols.pidLessThan} > TA.pid]]>
+	        			</when>
+    					<when test="logins.compareCols.pidGreaterThan!=null
+	        					and logins.compareCols.pidLessThan!=null">
+	        				<![CDATA[#{logins.compareCols.pidGreaterThan} < TA.pid ]]>
+	        				<choose><when test="logins.compareCols.pidBetweenType>logins.compareCols.pidLessThan"> or </when><otherwise> and </otherwise></choose>
+	        				<![CDATA[#{logins.compareCols.pidLessThan} > TA.pid]]>
+	        			</when>
+    					<when test="logins.compareCols.pidGreaterThan!=null">
+	        				<![CDATA[#{logins.compareCols.pidGreaterThan} < TA.pid]]>
+	        			</when>
+    					<when test="logins.compareCols.pidLessThan!=null">
+	        				<![CDATA[#{logins.compareCols.pidLessThan} > TA.pid]]>
+	        			</when>
+	        			<otherwise>
+	        				TA.pid =#{logins.pid}
+	        			</otherwise>
+    				</choose>
+			</if>
+			<if test="logins.compareCols.pidMults!=null and logins.compareCols.pidMults.length>0"> and  
+	        		TA.pid in <foreach item="item" index="index" collection="logins.compareCols.pidMults" open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="logins.compareCols.pidMultsNot!=null and logins.compareCols.pidMultsNot.length>0"> and  
+	        		TA.pid not in <foreach item="item" index="index" collection="logins.compareCols.pidMultsNot" open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="logins.compareCols.pidStr!=null"> and  
+	        		TA.pid like concat('%','#{logins.compareCols.pidStr}','%')
+			</if>
+
+		<if test="logins.ip!=null and logins.ip!=''"> and  
+			<choose>
+				<when test="logins.ip.indexOf(' ')>=0">
+        			<foreach item="item" index="index" collection="logins.ip.split(' ')" open="(" separator=" " close=")"><if test="index>0"> or </if> TA.ip like concat('%','#{item}','%')</foreach>
+        		</when>
+        		<when test="logins.ip.indexOf('+')>=0">
+        			TA.ip like concat('%','${logins.ip.replace("+", "%")}','%')
+        		</when>
+        		<when test="logins.ip.startsWith('!')">
+        			TA.ip !='${logins.ip.replace("!", "")}'
+        		</when>
+				<when test="logins.ip.startsWith('=')">
+        			TA.ip ='${logins.ip.replace("=", "")}'
+        		</when>
+        		<otherwise>
+        			TA.ip like concat('%','${logins.ip.replace("%", "")}','%')
+        		</otherwise>
+			</choose>
+		</if>
+
+		<if test="logins.port!=null and logins.port!=''"> and  
+			<choose>
+				<when test="logins.port.indexOf(' ')>=0">
+        			<foreach item="item" index="index" collection="logins.port.split(' ')" open="(" separator=" " close=")"><if test="index>0"> or </if> TA.port like concat('%','#{item}','%')</foreach>
+        		</when>
+        		<when test="logins.port.indexOf('+')>=0">
+        			TA.port like concat('%','${logins.port.replace("+", "%")}','%')
+        		</when>
+        		<when test="logins.port.startsWith('!')">
+        			TA.port !='${logins.port.replace("!", "")}'
+        		</when>
+				<when test="logins.port.startsWith('=')">
+        			TA.port ='${logins.port.replace("=", "")}'
+        		</when>
+        		<otherwise>
+        			TA.port like concat('%','${logins.port.replace("%", "")}','%')
+        		</otherwise>
+			</choose>
+		</if>
+
+		<if test="logins.stauts!=null and logins.stauts!=''"> and  
+			<choose>
+				<when test="logins.stauts.indexOf(',')>=0">
+        			TA.stauts in <foreach item="item" index="index" collection="logins.stauts.split(',')" open="(" separator="," close=")">#{item}</foreach>
+        		</when>
+        		<when test="logins.stauts.startsWith('!')">
+        			TA.stauts !='${logins.stauts.replace("!", "")}'
+        		</when>
+				<when test="logins.stauts.startsWith('=')">
+        			TA.stauts ='${logins.stauts.replace("=", "")}'
+        		</when>
+        		<otherwise>
+        			TA.stauts like concat('%','${logins.stauts.replace("%", "")}','%')
+        		</otherwise>
+			</choose>
+		</if>
+			<if test="logins.plan!=null or 
+					logins.compareCols.planBetweenType!=null or
+    				logins.compareCols.planGreaterThan!=null or
+    				logins.compareCols.planLessThan!=null"> and  
+    				<choose>
+    					<when test="logins.compareCols.planGreaterThan!=null
+	        					and logins.compareCols.planLessThan!=null
+	        					and logins.compareCols.planBetweenType!=null">
+	        				<![CDATA[#{logins.compareCols.planGreaterThan,jdbcType=TIMESTAMP} < TA.plan ]]>
+	        				<choose><when test="logins.compareCols.planBetweenType=='and'"> and </when><otherwise> or </otherwise></choose>
+	        				<![CDATA[#{logins.compareCols.planLessThan,jdbcType=TIMESTAMP} > TA.plan]]>
+	        			</when>
+    					<when test="logins.compareCols.planGreaterThan!=null
+	        					and logins.compareCols.planLessThan!=null">
+	        				<![CDATA[#{logins.compareCols.planGreaterThan,jdbcType=TIMESTAMP} < TA.plan ]]>
+	        				<choose><when test="logins.compareCols.planBetweenType>logins.compareCols.planLessThan"> or </when><otherwise> and </otherwise></choose>
+	        				<![CDATA[#{logins.compareCols.planLessThan,jdbcType=TIMESTAMP} > TA.plan]]>
+	        			</when>
+    					<when test="logins.compareCols.planGreaterThan!=null">
+	        				<![CDATA[#{logins.compareCols.planGreaterThan,jdbcType=TIMESTAMP} < TA.plan]]>
+	        			</when>
+    					<when test="logins.compareCols.planLessThan!=null">
+	        				<![CDATA[#{logins.compareCols.planLessThan,jdbcType=TIMESTAMP} > TA.plan]]>
+	        			</when>
+	        			<otherwise>
+	        				TA.plan =#{logins.plan,jdbcType=TIMESTAMP}
+	        			</otherwise>
+    				</choose>
+			</if>
+			<if test="logins.compareCols.planMults!=null and logins.compareCols.planMults.length>0"> and  
+	        		TA.plan in <foreach item="item" index="index" collection="logins.compareCols.planMults" open="(" separator="," close=")">#{item,jdbcType=TIMESTAMP}</foreach>
+			</if>
+			<if test="logins.compareCols.planMultsNot!=null and logins.compareCols.planMultsNot.length>0"> and  
+	        		TA.plan not in <foreach item="item" index="index" collection="logins.compareCols.planMultsNot" open="(" separator="," close=")">#{item,jdbcType=TIMESTAMP}</foreach>
+			</if>
+			<if test="logins.compareCols.planStr!=null"> and  
+	        		TA.plan like concat('%','#{logins.compareCols.planStr}','%')
+			</if>
+			<if test="logins.send!=null or 
+					logins.compareCols.sendBetweenType!=null or
+    				logins.compareCols.sendGreaterThan!=null or
+    				logins.compareCols.sendLessThan!=null"> and  
+    				<choose>
+    					<when test="logins.compareCols.sendGreaterThan!=null
+	        					and logins.compareCols.sendLessThan!=null
+	        					and logins.compareCols.sendBetweenType!=null">
+	        				<![CDATA[#{logins.compareCols.sendGreaterThan,jdbcType=TIMESTAMP} < TA.send ]]>
+	        				<choose><when test="logins.compareCols.sendBetweenType=='and'"> and </when><otherwise> or </otherwise></choose>
+	        				<![CDATA[#{logins.compareCols.sendLessThan,jdbcType=TIMESTAMP} > TA.send]]>
+	        			</when>
+    					<when test="logins.compareCols.sendGreaterThan!=null
+	        					and logins.compareCols.sendLessThan!=null">
+	        				<![CDATA[#{logins.compareCols.sendGreaterThan,jdbcType=TIMESTAMP} < TA.send ]]>
+	        				<choose><when test="logins.compareCols.sendBetweenType>logins.compareCols.sendLessThan"> or </when><otherwise> and </otherwise></choose>
+	        				<![CDATA[#{logins.compareCols.sendLessThan,jdbcType=TIMESTAMP} > TA.send]]>
+	        			</when>
+    					<when test="logins.compareCols.sendGreaterThan!=null">
+	        				<![CDATA[#{logins.compareCols.sendGreaterThan,jdbcType=TIMESTAMP} < TA.send]]>
+	        			</when>
+    					<when test="logins.compareCols.sendLessThan!=null">
+	        				<![CDATA[#{logins.compareCols.sendLessThan,jdbcType=TIMESTAMP} > TA.send]]>
+	        			</when>
+	        			<otherwise>
+	        				TA.send =#{logins.send,jdbcType=TIMESTAMP}
+	        			</otherwise>
+    				</choose>
+			</if>
+			<if test="logins.compareCols.sendMults!=null and logins.compareCols.sendMults.length>0"> and  
+	        		TA.send in <foreach item="item" index="index" collection="logins.compareCols.sendMults" open="(" separator="," close=")">#{item,jdbcType=TIMESTAMP}</foreach>
+			</if>
+			<if test="logins.compareCols.sendMultsNot!=null and logins.compareCols.sendMultsNot.length>0"> and  
+	        		TA.send not in <foreach item="item" index="index" collection="logins.compareCols.sendMultsNot" open="(" separator="," close=")">#{item,jdbcType=TIMESTAMP}</foreach>
+			</if>
+			<if test="logins.compareCols.sendStr!=null"> and  
+	        		TA.send like concat('%','#{logins.compareCols.sendStr}','%')
+			</if>
+			<if test="logins.uid!=null or 
+					logins.compareCols.uidBetweenType!=null or
+    				logins.compareCols.uidGreaterThan!=null or
+    				logins.compareCols.uidLessThan!=null"> and  
+    				<choose>
+    					<when test="logins.compareCols.uidGreaterThan!=null
+	        					and logins.compareCols.uidLessThan!=null
+	        					and logins.compareCols.uidBetweenType!=null">
+	        				<![CDATA[#{logins.compareCols.uidGreaterThan} < TA.uid ]]>
+	        				<choose><when test="logins.compareCols.uidBetweenType=='and'"> and </when><otherwise> or </otherwise></choose>
+	        				<![CDATA[#{logins.compareCols.uidLessThan} > TA.uid]]>
+	        			</when>
+    					<when test="logins.compareCols.uidGreaterThan!=null
+	        					and logins.compareCols.uidLessThan!=null">
+	        				<![CDATA[#{logins.compareCols.uidGreaterThan} < TA.uid ]]>
+	        				<choose><when test="logins.compareCols.uidBetweenType>logins.compareCols.uidLessThan"> or </when><otherwise> and </otherwise></choose>
+	        				<![CDATA[#{logins.compareCols.uidLessThan} > TA.uid]]>
+	        			</when>
+    					<when test="logins.compareCols.uidGreaterThan!=null">
+	        				<![CDATA[#{logins.compareCols.uidGreaterThan} < TA.uid]]>
+	        			</when>
+    					<when test="logins.compareCols.uidLessThan!=null">
+	        				<![CDATA[#{logins.compareCols.uidLessThan} > TA.uid]]>
+	        			</when>
+	        			<otherwise>
+	        				TA.uid =#{logins.uid}
+	        			</otherwise>
+    				</choose>
+			</if>
+			<if test="logins.compareCols.uidMults!=null and logins.compareCols.uidMults.length>0"> and  
+	        		TA.uid in <foreach item="item" index="index" collection="logins.compareCols.uidMults" open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="logins.compareCols.uidMultsNot!=null and logins.compareCols.uidMultsNot.length>0"> and  
+	        		TA.uid not in <foreach item="item" index="index" collection="logins.compareCols.uidMultsNot" open="(" separator="," close=")">#{item}</foreach>
+			</if>
+			<if test="logins.compareCols.uidStr!=null"> and  
+	        		TA.uid like concat('%','#{logins.compareCols.uidStr}','%')
+			</if>
+			<if test="logins.updatetime!=null or 
+					logins.compareCols.updatetimeBetweenType!=null or
+    				logins.compareCols.updatetimeGreaterThan!=null or
+    				logins.compareCols.updatetimeLessThan!=null"> and  
+    				<choose>
+    					<when test="logins.compareCols.updatetimeGreaterThan!=null
+	        					and logins.compareCols.updatetimeLessThan!=null
+	        					and logins.compareCols.updatetimeBetweenType!=null">
+	        				<![CDATA[#{logins.compareCols.updatetimeGreaterThan,jdbcType=TIMESTAMP} < TA.updateTime ]]>
+	        				<choose><when test="logins.compareCols.updatetimeBetweenType=='and'"> and </when><otherwise> or </otherwise></choose>
+	        				<![CDATA[#{logins.compareCols.updatetimeLessThan,jdbcType=TIMESTAMP} > TA.updateTime]]>
+	        			</when>
+    					<when test="logins.compareCols.updatetimeGreaterThan!=null
+	        					and logins.compareCols.updatetimeLessThan!=null">
+	        				<![CDATA[#{logins.compareCols.updatetimeGreaterThan,jdbcType=TIMESTAMP} < TA.updateTime ]]>
+	        				<choose><when test="logins.compareCols.updatetimeBetweenType>logins.compareCols.updatetimeLessThan"> or </when><otherwise> and </otherwise></choose>
+	        				<![CDATA[#{logins.compareCols.updatetimeLessThan,jdbcType=TIMESTAMP} > TA.updateTime]]>
+	        			</when>
+    					<when test="logins.compareCols.updatetimeGreaterThan!=null">
+	        				<![CDATA[#{logins.compareCols.updatetimeGreaterThan,jdbcType=TIMESTAMP} < TA.updateTime]]>
+	        			</when>
+    					<when test="logins.compareCols.updatetimeLessThan!=null">
+	        				<![CDATA[#{logins.compareCols.updatetimeLessThan,jdbcType=TIMESTAMP} > TA.updateTime]]>
+	        			</when>
+	        			<otherwise>
+	        				TA.updateTime =#{logins.updatetime,jdbcType=TIMESTAMP}
+	        			</otherwise>
+    				</choose>
+			</if>
+			<if test="logins.compareCols.updatetimeMults!=null and logins.compareCols.updatetimeMults.length>0"> and  
+	        		TA.updateTime in <foreach item="item" index="index" collection="logins.compareCols.updatetimeMults" open="(" separator="," close=")">#{item,jdbcType=TIMESTAMP}</foreach>
+			</if>
+			<if test="logins.compareCols.updatetimeMultsNot!=null and logins.compareCols.updatetimeMultsNot.length>0"> and  
+	        		TA.updateTime not in <foreach item="item" index="index" collection="logins.compareCols.updatetimeMultsNot" open="(" separator="," close=")">#{item,jdbcType=TIMESTAMP}</foreach>
+			</if>
+			<if test="logins.compareCols.updatetimeStr!=null"> and  
+	        		TA.updateTime like concat('%','#{logins.compareCols.updatetimeStr}','%')
+			</if>
+
+		<if test="logins.pidName!=null and logins.pidName!=''"> and  
+			<choose>
+				<when test="logins.pidName.indexOf(' ')>=0">
+        			<foreach item="item" index="index" collection="logins.pidName.split(' ')" open="(" separator=" " close=")"><if test="index>0"> or </if> TA.pid_name like concat('%','#{item}','%')</foreach>
+        		</when>
+        		<when test="logins.pidName.indexOf('+')>=0">
+        			TA.pid_name like concat('%','${logins.pidName.replace("+", "%")}','%')
+        		</when>
+        		<when test="logins.pidName.startsWith('!')">
+        			TA.pid_name !='${logins.pidName.replace("!", "")}'
+        		</when>
+				<when test="logins.pidName.startsWith('=')">
+        			TA.pid_name ='${logins.pidName.replace("=", "")}'
+        		</when>
+        		<otherwise>
+        			TA.pid_name like concat('%','${logins.pidName.replace("%", "")}','%')
+        		</otherwise>
+			</choose>
+		</if>
+
+		<if test="logins.pidPassword!=null and logins.pidPassword!=''"> and  
+			<choose>
+				<when test="logins.pidPassword.indexOf(' ')>=0">
+        			<foreach item="item" index="index" collection="logins.pidPassword.split(' ')" open="(" separator=" " close=")"><if test="index>0"> or </if> TA.pid_password like concat('%','#{item}','%')</foreach>
+        		</when>
+        		<when test="logins.pidPassword.indexOf('+')>=0">
+        			TA.pid_password like concat('%','${logins.pidPassword.replace("+", "%")}','%')
+        		</when>
+        		<when test="logins.pidPassword.startsWith('!')">
+        			TA.pid_password !='${logins.pidPassword.replace("!", "")}'
+        		</when>
+				<when test="logins.pidPassword.startsWith('=')">
+        			TA.pid_password ='${logins.pidPassword.replace("=", "")}'
+        		</when>
+        		<otherwise>
+        			TA.pid_password like concat('%','${logins.pidPassword.replace("%", "")}','%')
+        		</otherwise>
+			</choose>
+		</if>
+	</if>
+	</sql>
+
+	<sql id="view">
+		VW_logins
+		<!--
+		select TA.id,TA.pid,TA.ip,TA.port,TA.stauts,TA.plan,TA.send,TA.uid,TA.updateTime,T1.name AS pid_name,T1.password AS pid_password from t_logins TA LEFT JOIN t_persons T1 ON T1.id= TA.PID 
+		-->
+		<!--
+		select TA.id,TA.pid,TA.ip,TA.port,TA.stauts,TA.plan,TA.send,TA.uid,TA.updateTime,T1.name AS pid_name,T1.password AS pid_password from t_logins TA LEFT JOIN (SELECT id,name,password FROM t_persons) T1 ON T1.id= TA.PID 
+		-->
+	</sql>
+	
+	<!-- BEGIN 字段关联检索 -->
+	<resultMap id="loginsExtendMapper" type="com.is.web.bmw.entity.sql.extend.LoginsExtend">
+        <id property="id" column="id" />		<!-- id -->
+        <result property="pid" column="pid" />		<!-- pid -->
+                <result property="ip" column="ip" />		<!-- ip -->
+                <result property="port" column="port" />		<!-- port -->
+                <result property="stauts" column="stauts" />		<!-- stauts -->
+                <result property="plan" column="plan" />		<!-- plan -->
+                <result property="send" column="send" />		<!-- send -->
+                <result property="uid" column="uid" />		<!-- uid -->
+                <result property="updatetime" column="updateTime" />		<!-- updateTime -->
+                <result property="pidName" column="pid_name" />		<!-- name -->
+                <result property="pidPassword" column="pid_password" />		<!-- password -->
+            </resultMap>
+
+	<sql id="orderbys">
+		<if test="null!= logins and null!= logins.orderBys and logins.orderBys.size>0">
+			order by
+				${logins.orderBys.TABLEORDERBYSTR}
+		</if>
+	</sql>
+	
+	<sql id="groupbys">
+		<if test="null!= logins and null!= logins.groupBys and logins.groupBys!=''">
+			group by
+				${logins.groupBys}
+		</if>
+	</sql>
+	
+	<!-- BEGIN 字典字段转换检索 -->
+	<sql id="stauts_CHN">
+        <![CDATA[CASE TA.stauts WHEN "1" THEN '未执行'  WHEN "9" THEN '已发布'  WHEN "3" THEN '服务失败' END AS stauts_CHNVAL]]>
+	</sql>
+	<!-- END 字典字段转换检索 -->
+	
+	<sql id="startSql">
+		select * from (
+	</sql>
+
+	<sql id="endSql">
+		 ) b <include refid="pageLimit" />
+	</sql>
+
+	<sql id="pageLimit">
+		<![CDATA[ limit ${startIndex},${endIndex}]]>
+	</sql>
+
+</mapper>

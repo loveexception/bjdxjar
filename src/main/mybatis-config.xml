@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	
+	<settings>  
+	    <setting name="logImpl" value="LOG4J2" />  
+	</settings>
+	
+	<environments default="development">  
+        <environment id="development">  
+            <transactionManager type="MANAGED" />  
+            <dataSource type="POOLED">  
+             <!--  -->    
+                <property name="driver" value="com.mysql.jdbc.Driver" />  
+                <property name="url" value="jdbc:mysql://123.57.94.233:3306/bjdxselenium?characterEncoding=UTF-8" />  
+                <property name="username" value="dxnews_test" />  
+                <property name="password" value="userzxy" /> 
+             
+             
+                <!--   
+                <property name="driver" value="com.mysql.jdbc.Driver" />  
+                <property name="url" value="jdbc:mysql://123.57.94.233:3306/bjdxselenium?characterEncoding=UTF-8" />  
+                <property name="username" value="root" />  
+                <property name="password" value="aLxSqUbTwO" />   
+                -->
+                
+                <!--     
+                <property name="driver" value="com.mysql.jdbc.Driver" />  
+                <property name="url" value="jdbc:mysql://127.0.0.1:3306/bjdxselenium?characterEncoding=UTF-8" />  
+                <property name="username" value="root" />  
+                <property name="password" value="root" />   
+             -->
+                
+                <!--    
+ 				<property name="driver" value="com.mysql.jdbc.Driver" />  
+                <property name="url" value="jdbc:mysql://rm-2zepv24t1b4z50t59o.mysql.rds.aliyuncs.com:3306/bmw?characterEncoding=UTF-8" />  
+                <property name="username" value="maodajun" />  
+                <property name="password" value="ma0DaJun" />  
+                 -->
+                
+                 
+                <!--   
+                <property name="driver" value="com.mysql.jdbc.Driver" />  
+                <property name="url" value="jdbc:mysql://rm-2zepv24t1b4z50t59.mysql.rds.aliyuncs.com:3306/bmw?characterEncoding=UTF-8" />  
+                <property name="username" value="maodajun" />  
+                <property name="password" value="ma0DaJun" />  
+                  -->        
+            </dataSource>  
+        </environment>  
+    </environments>  
+	
+	<mappers>
+		<mapper resource="mappers/is/web/bmw/sql/LoginsMapper.xml" />
+		<mapper resource="mappers/is/web/bmw/sql/LoginsExtendViewMapper.xml" />
+		<mapper resource="mappers/is/web/bmw/sql/PersonsMapper.xml" />
+		<mapper resource="mappers/is/web/bmw/sql/TopicsMapper.xml" />
+		<mapper resource="mappers/is/web/bmw/sql/SubtopicsMapper.xml" />
+		<mapper resource="mappers/is/web/bmw/sql/SubtopicsExtendViewMapper.xml" />
+		<mapper resource="mappers/is/web/bmw/sql/StatistMapper.xml"></mapper>
+		<mapper resource="mappers/is/web/bmw/sql/PlansMapper.xml"></mapper>
+	</mappers>
+	
+</configuration>

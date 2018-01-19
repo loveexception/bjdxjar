@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<!-- status=debug 可以查看log4j的装配过程 -->  
+<configuration status="off" monitorInterval="1800">  
+    <properties>  
+        <property name="LOG_HOME">log</property>  
+<!--         <property name="LOG_HOME">d:\logs</property>	 -->  
+        <!-- 日志备份目录 -->  
+        <property name="STAT_NAME">stat</property>  
+        <property name="SERVER_NAME">bmw</property>  
+    </properties>  
+    <!--先定义所有的appender-->
+    <appenders>  
+        <!--输出控制台的配置-->
+        <Console name="Console" target="SYSTEM_OUT">
+            <!--控制台只输出level及以上级别的信息（onMatch），其他的直接拒绝（onMismatch）-->
+            <ThresholdFilter level="trace" onMatch="ACCEPT" onMismatch="DENY"/>
+            <!--是输出日志的格式-->
+            <PatternLayout pattern="%date{yyyy-MM-dd HH:mm:ss.SSS} %level [%thread][%file:%line] - %msg%n" />  
+        </Console>
+        
+        <!--文件会打印出所有信息，这个log每次运行程序会自动清空，由append属性决定，这个也挺有用的，适合临时测试用-->
+        <File name="developerLog" fileName="developer.log" append="false">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} %-5level %class{36} %L %M - %msg%xEx%n"/>
+        </File>
+
+        <!-- SizeBasedTriggeringPolicy
+        	这个会打印出所有的信息，每次大小超过size，则这size大小的日志会自动存入按年份-月份建立的文件夹下面并进行压缩，作为存档
+        	<SizeBasedTriggeringPolicy size="5MB"/>
+        -->
+        <!-- TimeBasedTriggeringPolicy 
+        	基于时间的触发策略。该策略主要是完成周期性的log文件封存工作。有两个参数：
+			interval，integer型，指定两次封存动作之间的时间间隔。
+					单位:以日志的命名精度来确定单位，比如yyyy-MM-dd-HH 单位为小时，yyyy-MM-dd-HH-mm 单位为分钟
+			modulate，boolean型，说明是否对封存时间进行调制。
+					若modulate=true，则封存时间将以0点为边界进行偏移计算。比如，modulate=true，interval=4hours，那么假设上次封存日志的时间为03:00，则下次封存日志的时间为04:00，之后的封存时间依次为08:00，12:00，16:00，。。。 
+			<TimeBasedTriggeringPolicy interval="24" modulate="true" />  
+		-->
+        
+        
+        <!-- 运营日志 -->
+        <RollingRandomAccessFile name="RunningLog"  
+            fileName="RunningLog.log"  
+            filePattern="RunningLog.%d{yyyy-MM-dd-HH}.log">  
+            <PatternLayout charset="UTF-8" pattern="%date{HH:mm:ss.SSS} %class{36} %M - %msg%n" />  
+            <Policies>  
+                <TimeBasedTriggeringPolicy interval="24" modulate="true" />
+            </Policies>  
+        </RollingRandomAccessFile>
+        
+        <!-- 运营异常数据日志 -->
+        <RollingRandomAccessFile name="RunningExceptionLog"  
+            fileName="RunningExceptionLog.log"  
+            filePattern="RunningExceptionLog.%d{yyyy-MM-dd-HH}.log">  
+            <PatternLayout charset="UTF-8" pattern="%date{HH:mm:ss.SSS} %class{36} - %msg%n" />  
+            <Policies>  
+                <TimeBasedTriggeringPolicy interval="24" modulate="true" />
+            </Policies>  
+        </RollingRandomAccessFile>
+    </appenders>  
+    
+     <!--然后定义logger，只有定义了logger并引入的appender，appender才会生效-->
+    <loggers>  
+        <!-- logger在类中定义继承关系时，additivity="false"，就不会输出两遍 -->
+        <logger name="selenium2.SeleniumMyBmw" level="all" additivity="false">  
+            <appender-ref ref="Console" />    
+            <appender-ref ref="developerLog" />    
+        </logger>
+        
+        <logger name="org.apache.ibatis" level="all" additivity="false">
+	        <appender-ref ref="Console" />
+	    </logger>
+	 
+	    <logger name="org.mybatis" level="all" additivity="false">
+	        <appender-ref ref="Console" />
+	    </logger>
+	    
+	    <logger name="java.sql.Connection" level="all" additivity="false">
+	        <appender-ref ref="Console" />
+	    </logger>
+
+	    <logger name="java.sql.Statement" level="all" additivity="false">
+	        <appender-ref ref="Console" />
+	    </logger>
+
+	    <logger name="java.sql.PreparedStatement" level="all" additivity="false">
+	        <appender-ref ref="Console" />
+	    </logger>
+    
+ 		<!--建立一个默认的root的logger-->
+        <root level="DEBUG" includeLocation="true">  
+            <appender-ref ref="Console" />  
+        </root>  
+    </loggers>  
+</configuration>  
