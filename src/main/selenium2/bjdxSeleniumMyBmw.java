@@ -101,7 +101,7 @@ public class bjdxSeleniumMyBmw {
 		while (true) {
 			SqlSession session  = null;
 			try {
-				Stopwatch sw = Stopwatch.begin();
+				Stopwatch sw = Stopwatch.begin();//秒表
 
 				session = getSession();
 				LoginsExtend login = slmb.checkUserAlive(session);
@@ -111,33 +111,30 @@ public class bjdxSeleniumMyBmw {
 				slmb.loginOne(session, login);
 				session.commit();
 				
-				logger.info(sw.du()+ "who is :"+login.getUid()+"-"+login.getPidName());
+				logger.info(sw.toString()+ "who is :"+login.getUid()+"-"+login.getPidName());
 				
 				
 				List<Map> pagers = slmb.readPage(session);
 				session.commit();
-
+				int count = 0;
 				for (Map topic : pagers) {
-					slmb.clickPV( topic); // 可以替换为HTTP
+					count += slmb.clickPV( topic); // 可以替换为HTTP
 				}
 
-				logger.info(sw.du()+"click:"+pagers.size()+"pages");
-				slmb.countPV(session, Lang.length(pagers));
+				logger.info(sw.toString()+ "click:"+pagers.size()+"pages");
+				slmb.countPV(session, count);
 
 				List<Subtopics> subpages = replyTopic(session, slmb);
 				session.commit();
-				logger.info(sw.du()+"reply:"+subpages.size()+"topic");
+				logger.info(sw.toString()+ "reply:"+subpages.size()+"topic");
 				slmb.countReply(session, Lang.length(subpages));
-				sw.stop();
-				
+				sw.stop();				
 				logger.info("end:"+sw.toString());
-
-			
+		
 			} catch (Exception e) {
 				logger.error(e);
 			}finally {
 				session.close();
-				Thread.sleep(1 * 1000);// * 60
 			}
 		}
 
@@ -246,10 +243,7 @@ public class bjdxSeleniumMyBmw {
 			Topics topicsUpd = makeOldTopic(topic);
 			topicMapper.updTopicsByPrimaryKey(topicsUpd);
 		}
-		
-
-
-		
+				
 		return result;
 
 	}
@@ -266,13 +260,13 @@ public class bjdxSeleniumMyBmw {
 	}
 
 
-	public void clickPV( Map topics) {
+	public int clickPV( Map topics) {
 		String url = Constant.FORUM_URL.replace("#forumId#", topics.get("oldid").toString());
 		for(int i =0 ; i<10 ;i++){
 			Response res =Http.get(url);
 			System.out.print(".");
 		}
-		System.out.println();
+		return 10;
 	}
 	public void countPV(SqlSession session, int count) {
 		Date day = new Date();

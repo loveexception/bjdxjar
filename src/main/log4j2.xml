@@ -66,28 +66,28 @@
             <appender-ref ref="developerLog" />    
         </logger>
         
-        <logger name="org.apache.ibatis" level="all" additivity="false">
+        <logger name="org.apache.ibatis" level="info" additivity="false">
 	        <appender-ref ref="Console" />
 	    </logger>
 	 
-	    <logger name="org.mybatis" level="all" additivity="false">
+	    <logger name="org.mybatis" level="info" additivity="false">
 	        <appender-ref ref="Console" />
 	    </logger>
 	    
-	    <logger name="java.sql.Connection" level="all" additivity="false">
+	    <logger name="java.sql.Connection" level="info" additivity="false">
 	        <appender-ref ref="Console" />
 	    </logger>
 
-	    <logger name="java.sql.Statement" level="all" additivity="false">
+	    <logger name="java.sql.Statement" level="info" additivity="false">
 	        <appender-ref ref="Console" />
 	    </logger>
 
-	    <logger name="java.sql.PreparedStatement" level="all" additivity="false">
+	    <logger name="java.sql.PreparedStatement" level="info" additivity="false">
 	        <appender-ref ref="Console" />
 	    </logger>
     
  		<!--建立一个默认的root的logger-->
-        <root level="DEBUG" includeLocation="true">  
+        <root level="INFO" includeLocation="true">  
             <appender-ref ref="Console" />  
         </root>  
     </loggers>  
